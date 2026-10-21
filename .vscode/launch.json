@@ -1,0 +1,73 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "🚀 1. Run AeroMind Backend (FastAPI & WebSockets)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": [
+        "aeromind.api.server:app",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "8000",
+        "--reload"
+      ],
+      "cwd": "${workspaceFolder}/backend",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/backend"
+      },
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "🧠 2. Train MAPPO Neural Network",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/backend/aeromind/train.py",
+      "args": [
+        "--episodes",
+        "50",
+        "--drones",
+        "8",
+        "--targets",
+        "20"
+      ],
+      "cwd": "${workspaceFolder}/backend",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/backend"
+      },
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "📊 3. Run Benchmark Suite (MAPPO vs Baselines)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/backend/aeromind/benchmark.py",
+      "cwd": "${workspaceFolder}/backend",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/backend"
+      },
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "☁️ 4. Train on AWS Cloud (GPU / S3 Sync)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/backend/aeromind/cloud/aws_trainer.py",
+      "args": [
+        "--episodes",
+        "100",
+        "--drones",
+        "8",
+        "--targets",
+        "20"
+      ],
+      "cwd": "${workspaceFolder}/backend",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/backend"
+      },
+      "console": "integratedTerminal"
+    }
+  ]
+}

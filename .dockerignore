@@ -1,0 +1,12 @@
+node_modules
+.git
+.github
+dist
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.venv
+venv
+.env
+checkpoints/*.tmp

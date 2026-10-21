@@ -1,0 +1,90 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "🚀 Start Full Stack (Backend + Frontend)",
+      "type": "shell",
+      "command": "${workspaceFolder}/start.bat",
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "🌐 Start Frontend Dev Server",
+      "type": "shell",
+      "command": "npm.cmd run dev",
+      "options": {
+        "cwd": "${workspaceFolder}/frontend"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "⚡ Start Backend FastAPI Server",
+      "type": "shell",
+      "command": "py -m uvicorn aeromind.api.server:app --host 127.0.0.1 --port 8000 --reload",
+      "options": {
+        "cwd": "${workspaceFolder}/backend",
+        "env": {
+          "PYTHONPATH": "${workspaceFolder}/backend"
+        }
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "🧠 Train MAPPO Policy",
+      "type": "shell",
+      "command": "py -m aeromind.train --episodes 50 --drones 8 --targets 20",
+      "options": {
+        "cwd": "${workspaceFolder}/backend",
+        "env": {
+          "PYTHONPATH": "${workspaceFolder}/backend"
+        }
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "☁️ Train on AWS Cloud (GPU / S3 Sync)",
+      "type": "shell",
+      "command": "py -m aeromind.cloud.aws_trainer --episodes 100 --drones 8 --targets 20",
+      "options": {
+        "cwd": "${workspaceFolder}/backend",
+        "env": {
+          "PYTHONPATH": "${workspaceFolder}/backend"
+        }
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "📊 Run Empirical Benchmarks",
+      "type": "shell",
+      "command": "py -m aeromind.benchmark",
+      "options": {
+        "cwd": "${workspaceFolder}/backend",
+        "env": {
+          "PYTHONPATH": "${workspaceFolder}/backend"
+        }
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "🐳 Docker Compose Up",
+      "type": "shell",
+      "command": "docker compose up --build",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "🛑 Docker Compose Down",
+      "type": "shell",
+      "command": "docker compose down",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    }
+  ]
+}

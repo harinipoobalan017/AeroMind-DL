@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  # ==========================================
+  # 1. Edge Orchestrator & Telemetry API
+  # ==========================================
+  aeromind-edge:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: aeromind-edge
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - MQTT_BROKER=aeromind-mqtt
+      - ROLE=EDGE_ORCHESTRATOR
+    depends_on:
+      - aeromind-mqtt
+    networks:
+      - aeromind-net
+
+  # ==========================================
+  # 2. Cloud Model Training & Optimization
+  # ==========================================
+  aeromind-cloud:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: aeromind-cloud
+    command: ["python", "-m", "aeromind.cloud.aws_trainer", "--episodes", "100", "--drones", "8", "--targets", "20"]
+    restart: on-failure
+    environment:
+      - ROLE=CLOUD_TRAINING_NODE
+      - DEVICE=cpu
+    volumes:
+      - ./backend/checkpoints:/app/checkpoints
+    networks:
+      - aeromind-net
+
+  # ==========================================
+  # 3. 3D Web Dashboard & Control Center
+  # ==========================================
+  aeromind-dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: aeromind-dashboard
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - aeromind-edge
+    networks:
+      - aeromind-net
+
+  # ==========================================
+  # 4. Swarm IoT MQTT Message Broker
+  # ==========================================
+  aeromind-mqtt:
+    image: eclipse-mosquitto:latest
+    container_name: aeromind-mqtt
+    restart: unless-stopped
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
+    networks:
+      - aeromind-net
+
+networks:
+  aeromind-net:
+    driver: bridge

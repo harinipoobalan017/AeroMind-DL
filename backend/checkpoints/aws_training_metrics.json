@@ -1,0 +1,27 @@
+{
+  "episodes": 2,
+  "best_reward": -18000.0,
+  "total_time_seconds": 0.64,
+  "device": "cpu",
+  "gpu": "Intel/AMD vCPU",
+  "history": [
+    {
+      "episode": 1,
+      "reward": -18000.0,
+      "completion_rate": 0.0,
+      "collisions": 180,
+      "distance_m": 1763.9,
+      "steps": 140,
+      "timestamp": 1791624486.9582517
+    },
+    {
+      "episode": 2,
+      "reward": -20100.0,
+      "completion_rate": 0.0,
+      "collisions": 201,
+      "distance_m": 1768.0,
+      "steps": 140,
+      "timestamp": 1791624487.2793078
+    }
+  ]
+}

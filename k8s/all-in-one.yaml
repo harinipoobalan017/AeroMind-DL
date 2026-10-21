@@ -1,0 +1,173 @@
+# ==========================================
+# AeroMind-DL: Complete Kubernetes Manifest
+# Namespace, MQTT Broker, Backend API, Frontend Dashboard & RL Job
+# ==========================================
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: aeromind
+---
+# 1. Swarm MQTT Message Broker (Eclipse Mosquitto)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aeromind-mqtt
+  namespace: aeromind
+  labels:
+    app: aeromind-mqtt
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: aeromind-mqtt
+  template:
+    metadata:
+      labels:
+        app: aeromind-mqtt
+    spec:
+      containers:
+      - name: mosquitto
+        image: eclipse-mosquitto:latest
+        ports:
+        - containerPort: 1883
+          name: mqtt
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: aeromind-mqtt
+  namespace: aeromind
+spec:
+  type: NodePort
+  ports:
+  - port: 1883
+    targetPort: 1883
+    nodePort: 31883
+    name: mqtt
+  selector:
+    app: aeromind-mqtt
+---
+# 2. AeroMind-DL Edge Backend & MAPPO Inference API
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aeromind-edge
+  namespace: aeromind
+  labels:
+    app: aeromind-edge
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: aeromind-edge
+  template:
+    metadata:
+      labels:
+        app: aeromind-edge
+    spec:
+      containers:
+      - name: edge-orchestrator
+        image: aeromind-edge:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8000
+          name: http-api
+        env:
+        - name: PORT
+          value: "8000"
+        - name: MQTT_BROKER
+          value: "aeromind-mqtt.aeromind.svc.cluster.local"
+        - name: ROLE
+          value: "EDGE_ORCHESTRATOR"
+        resources:
+          limits:
+            cpu: "2000m"
+            memory: "2Gi"
+          requests:
+            cpu: "500m"
+            memory: "512Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: aeromind-edge
+  namespace: aeromind
+spec:
+  type: NodePort
+  ports:
+  - port: 8000
+    targetPort: 8000
+    nodePort: 30800
+    name: http-api
+  selector:
+    app: aeromind-edge
+---
+# 3. 3D WebGL Dashboard Twin (React + Three.js + Nginx)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aeromind-dashboard
+  namespace: aeromind
+  labels:
+    app: aeromind-dashboard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: aeromind-dashboard
+  template:
+    metadata:
+      labels:
+        app: aeromind-dashboard
+    spec:
+      containers:
+      - name: dashboard
+        image: aeromind-dashboard:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 80
+          name: http
+        resources:
+          limits:
+            cpu: "1000m"
+            memory: "1Gi"
+          requests:
+            cpu: "200m"
+            memory: "256Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: aeromind-dashboard
+  namespace: aeromind
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    targetPort: 80
+    nodePort: 30300
+    name: http
+  selector:
+    app: aeromind-dashboard
+---
+# 4. Batch Job: Cloud GPU Multi-Agent RL Training
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: aeromind-mappo-training-job
+  namespace: aeromind
+spec:
+  template:
+    spec:
+      containers:
+      - name: cloud-trainer
+        image: aeromind-edge:latest
+        imagePullPolicy: IfNotPresent
+        command: ["python", "-m", "aeromind.cloud.aws_trainer", "--episodes", "50", "--drones", "8", "--targets", "20"]
+        env:
+        - name: DEVICE
+          value: "cpu"
+        - name: ROLE
+          value: "CLOUD_TRAINING_NODE"
+      restartPolicy: OnFailure
+  backoffLimit: 3

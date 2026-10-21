@@ -1,0 +1,32 @@
+# ==========================================
+# AeroMind-DL: Backend Container
+# Multi-Agent Deep RL & Cloud-Edge API Server
+# ==========================================
+FROM python:3.13-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements and install fast lightweight PyTorch CPU & dependencies
+COPY backend/requirements.txt .
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu && \
+    pip install --no-cache-dir numpy fastapi uvicorn websockets pydantic scipy python-multipart requests boto3
+
+# Copy backend codebase
+COPY backend/ /app/
+
+# Environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app \
+    PORT=8000
+
+EXPOSE 8000
+
+# Start FastAPI Uvicorn Server with WebSocket support
+CMD ["uvicorn", "aeromind.api.server:app", "--host", "0.0.0.0", "--port", "8000"]
